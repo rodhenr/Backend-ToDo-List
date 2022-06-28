@@ -6,7 +6,7 @@ require("dotenv").config();
 const signUp = async (req, res) => {
   const { email, password, username } = req.body;
   const sql =
-    "INSERT INTO user(user_name, user_password, user_email) VALUES(?, ?, ?)";
+    "INSERT INTO users(user_name, user_password, user_email) VALUES(?, ?, ?)";
   const hash = await bcrypt.hash(password, 10);
   const values = [username, hash, email];
   conn.query(sql, values, (err) => {
@@ -23,11 +23,11 @@ const signUp = async (req, res) => {
 };
 
 const logIn = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   conn.query(
-    "SELECT * FROM user WHERE LOWER(user_email) = LOWER(?)",
-    email,
+    "SELECT * FROM users WHERE LOWER(user_name) = LOWER(?)",
+    username,
     async (err, result) => {
       if (err) {
         throw err;
@@ -38,9 +38,19 @@ const logIn = async (req, res) => {
         } else {
           const user = result[0].user_name;
           const accessToken = jwt.sign({ user }, process.env.SECRET, {
+            expiresIn: "10m",
+          });
+          const refreshToken = jwt.sign({ user }, process.env.REFRESH_SECRET, {
             expiresIn: "15m",
           });
-          res.json({ user, accessToken });
+          // Assigning refresh token in http-only cookie
+          res.cookie("jwt", refreshToken, {
+            httpOnly: true,
+            sameSite: "None",
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000,
+          });
+          res.json({ accessToken });
         }
       } else {
         res.status(401).send({ message: "Login inválido! Tente novamente." });
@@ -50,4 +60,4 @@ const logIn = async (req, res) => {
   );
 };
 
-module.exports = { signUp, logIn };
+module.exports = { signUp, logIn};

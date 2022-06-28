@@ -14,7 +14,7 @@ verifySignUp = (req, res, next) => {
     });
   } else {
     conn.query(
-      "SELECT id FROM user WHERE LOWER(user_name) = LOWER(?)",
+      "SELECT * FROM users WHERE LOWER(user_name) = LOWER(?)",
       username,
       (err, result) => {
         if (result.length) {
@@ -22,7 +22,7 @@ verifySignUp = (req, res, next) => {
           return;
         }
         conn.query(
-          "SELECT id FROM user WHERE LOWER(user_email) = LOWER(?)",
+          "SELECT * FROM users WHERE LOWER(user_email) = LOWER(?)",
           email,
           (err, result) => {
             if (result.length) {
@@ -44,7 +44,6 @@ verifyLogIn = (req, res, next) => {
 
   if (errors.errors.length > 0) {
     const errorMessages = errors.array().map((error) => error.msg);
-
     return res.status(400).send({
       errors: errorMessages,
     });

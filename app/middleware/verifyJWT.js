@@ -1,19 +1,25 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-exports.verifyToken = (req, res, next) => {
-  const token = req.headers["x-access-token"];
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization || req.headers.Authorization;
 
-  if (!token) {
-    return res.status(401).json({ message: "No token provided." });
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Nenhum token encontrado." });
   }
+
+  const token = authHeader.split(" ")[1];
 
   jwt.verify(token, process.env.SECRET, (err, decoded) => {
     if (err) {
-      return res.status(401).json({ message: "Failed to authenticate token." });
+      return res
+        .status(403)
+        .json({ message: "Falha ao autenticar o token.", err });
     }
 
-    req.userId = decoded.id;
+    req.username = decoded.user;
     next();
   });
 };
+
+module.exports = verifyToken;

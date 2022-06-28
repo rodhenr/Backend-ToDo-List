@@ -1,12 +1,26 @@
 const express = require("express");
-const controllers = require("../controllers/user.controller");
 const router = express.Router();
 
+const {
+  getUserTodo,
+  addTodo,
+  updateTodo,
+  deleteTodo,
+} = require("../controllers/user.controller");
+
+const verifyJWT = require("../middleware/verifyJWT");
+
 router
-  .route("/")
-  .get(controllers.getAllTodos)
+  .route("/users")
+  .get(verifyJWT, getUserTodo)
+  .post(verifyJWT, addTodo)
+  .patch(verifyJWT, updateTodo)
+  .delete(verifyJWT, deleteTodo);
+
+/*
   .post(controllers.addTodo)
   .patch(controllers.updateTodo)
   .delete(controllers.deleteTodo);
+*/
 
 module.exports = router;
