@@ -17,10 +17,4 @@ router
   .patch(verifyJWT, updateTodo)
   .delete(verifyJWT, deleteTodo);
 
-/*
-  .post(controllers.addTodo)
-  .patch(controllers.updateTodo)
-  .delete(controllers.deleteTodo);
-*/
-
 module.exports = router;
