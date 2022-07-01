@@ -44,7 +44,7 @@ verifyLogIn = (req, res, next) => {
 
   if (errors.errors.length > 0) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return res.status(400).send({
+    return res.status(401).send({
       errors: errorMessages,
     });
   } else {
