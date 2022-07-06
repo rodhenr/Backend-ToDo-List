@@ -13,7 +13,7 @@ const handleRefreshToken = (req, res) => {
     if (err) {
       return res.status(406).json({ message: "Refresh Token expired" });
     } else {
-      const userName = decoded.user;
+      const { userName } = decoded;
       const accessToken = jwt.sign({ userName }, process.env.SECRET, {
         expiresIn: "10m",
       });

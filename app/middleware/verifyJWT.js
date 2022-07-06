@@ -10,11 +10,11 @@ const verifyToken = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   jwt.verify(token, process.env.SECRET, (err, decoded) => {
-    if (err) {
+    if (err)
       return res
         .status(403)
         .json({ message: "Falha ao autenticar o token.", err });
-    }
+
     req.username = decoded.userName;
     next();
   });

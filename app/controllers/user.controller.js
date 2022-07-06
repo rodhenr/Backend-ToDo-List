@@ -17,7 +17,6 @@ const getUserTodo = async (req, res) => {
       }),
     });
   } catch (err) {
-    console.log(err);
     return res.status(500).send("Ops... Algo de errado aconteceu!");
   }
 };
