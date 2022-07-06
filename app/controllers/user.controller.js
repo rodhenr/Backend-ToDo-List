@@ -1,65 +1,80 @@
-const conn = require("../config/db.config");
+const { task } = require("../models");
 const uuid = require("uuid");
 require("dotenv").config();
 
-const getUserTodo = (req, res) => {
-  const sql = "SELECT * FROM tasks WHERE user_name=?";
+const getUserTodo = async (req, res) => {
+  const { username } = req;
 
-  conn.query(sql, req.username, (err, data) => {
-    if (err) {
-      res.status(500).send("Ops... Algo de errado aconteceu!");
-    } else {
-      res.status(200).json({
-        data: data.map((i) => {
-          return { task_uuid: i.task_uuid, task_desc: i.task_desc };
-        }),
-      });
-    }
-  });
+  try {
+    const userData = await task.findAll({
+      where: { user_name: username.toLowerCase() },
+    });
+    if (!userData) return;
+
+    return res.status(200).json({
+      data: userData.map((i) => {
+        return { task_uuid: i.task_uuid, task_desc: i.task_desc };
+      }),
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Ops... Algo de errado aconteceu!");
+  }
 };
 
-const addTodo = (req, res) => {
+const addTodo = async (req, res) => {
+  const { username } = req;
   const { item } = req.body;
   const task_uuid = uuid.v4();
-  const sql =
-    "INSERT INTO tasks(user_name, task_uuid, task_desc) VALUES (?, ?, ?)";
-  const values = [req.username, task_uuid, JSON.stringify(item)];
 
-  conn.query(sql, values, (err) => {
-    if (err) {
-      res.status(500).send("Ops... Algo de errado aconteceu no cadastro!");
-    } else {
-      res.status(200).send("Item adicionado com sucesso!");
-    }
-  });
+  try {
+    await task.create(
+      {
+        task_uuid,
+        task_desc: item,
+        user_name: username,
+      },
+      {
+        where: { user_name: username.toLowerCase() },
+      }
+    );
+
+    return res.status(200).send("Item adicionado com sucesso!");
+  } catch (err) {
+    return res.status(500).send("Ops... Algo de errado aconteceu no cadastro!");
+  }
 };
 
-const updateTodo = (req, res) => {
+const updateTodo = async (req, res) => {
   const { task_uuid, task_desc } = req.body;
-  const sql = "UPDATE tasks SET task_desc=? WHERE task_uuid=? AND user_name=?";
-  const values = [JSON.stringify(task_desc), task_uuid, req.username];
+  const { username } = req;
 
-  conn.query(sql, values, (err) => {
-    if (err) {
-      res.status(500).send("Ops... Algo de errado aconteceu!");
-    } else {
-      res.status(200).send("Dados atualizados com sucesso!");
-    }
-  });
+  try {
+    const toDo = await task.findOne({
+      where: { task_uuid: task_uuid, user_name: username.toLowerCase() },
+    });
+    toDo.task_desc = task_desc;
+    await toDo.save();
+
+    return res.status(200).send("Dados atualizados com sucesso!");
+  } catch (err) {
+    return res.status(500).send("Ops... Algo de errado aconteceu!");
+  }
 };
 
-const deleteTodo = (req, res) => {
+const deleteTodo = async (req, res) => {
   const { id } = req.query;
-  const sql = "DELETE FROM tasks WHERE task_uuid=? AND user_name=?";
-  const values = [id, req.username];
+  const { username } = req;
 
-  conn.query(sql, values, (err) => {
-    if (err) {
-      res.status(500).send("Ops... Algo de errado aconteceu!");
-    } else {
-      res.status(200).send("Item deletado com sucesso!");
-    }
-  });
+  try {
+    await task.destroy({
+      where: { task_uuid: id, user_name: username.toLowerCase() },
+    });
+
+    return res.status(200).send("Item deletado com sucesso!");
+  } catch (err) {
+    return res.status(500).send("Ops... Algo de errado aconteceu!");
+  }
 };
 
 module.exports = { addTodo, getUserTodo, updateTodo, deleteTodo };

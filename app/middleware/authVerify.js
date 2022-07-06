@@ -1,55 +1,47 @@
-const conn = require("../config/db.config");
+const { user } = require("../models");
+const { Op } = require("sequelize");
 const { validationResult } = require("express-validator");
 require("dotenv").config();
 
-verifySignUp = (req, res, next) => {
+verifySignUp = async (req, res, next) => {
   const { username, email } = req.body;
   const errors = validationResult(req);
 
-  if (errors.errors.length > 0) {
-    const errorMessages = errors.array().map((error) => error.msg);
-
+  if (errors.errors.length > 0)
     return res.status(400).send({
-      errors: errorMessages,
+      errors: errors.array().map((error) => error.msg),
     });
-  } else {
-    conn.query(
-      "SELECT * FROM users WHERE LOWER(user_name) = LOWER(?)",
-      username,
-      (err, result) => {
-        if (result.length) {
-          res.status(409).send({ message: "Este usuário já está cadastrado" });
-          return;
-        }
-        conn.query(
-          "SELECT * FROM users WHERE LOWER(user_email) = LOWER(?)",
-          email,
-          (err, result) => {
-            if (result.length) {
-              res
-                .status(409)
-                .send({ message: "Este e-mail já está cadastrado" });
-              return;
-            }
-            next();
-          }
-        );
-      }
-    );
+
+  try {
+    const users = await user.findOne({
+      where: {
+        [Op.or]: [
+          { user_name: username.toLowerCase() },
+          { user_email: email.toLowerCase() },
+        ],
+      },
+    });
+
+    if (users)
+      return res
+        .status(409)
+        .send({ message: "Este usuário já está cadastrado" });
+
+    next();
+  } catch (err) {
+    return res.status(500).send("Ops... Algo de errado aconteceu!");
   }
 };
 
 verifyLogIn = (req, res, next) => {
   const errors = validationResult(req);
 
-  if (errors.errors.length > 0) {
-    const errorMessages = errors.array().map((error) => error.msg);
-    return res.status(401).send({
-      errors: errorMessages,
+  if (errors.errors.length > 0)
+    return res.status(400).send({
+      errors: errors.array().map((error) => error.msg),
     });
-  } else {
-    next();
-  }
+
+  next();
 };
 
 module.exports = { verifySignUp, verifyLogIn };

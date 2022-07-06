@@ -1,63 +1,68 @@
-const conn = require("../config/db.config");
+const { user } = require("../models");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const signUp = async (req, res) => {
   const { email, password, username } = req.body;
-  const sql =
-    "INSERT INTO users(user_name, user_password, user_email) VALUES(?, ?, ?)";
-  const hash = await bcrypt.hash(password, 10);
-  const values = [username, hash, email];
-  conn.query(sql, values, (err) => {
-    if (err) {
-      res.status(500).send({
-        msg: "Aconteceu um erro no seu registro...",
-      });
-    } else {
-      res.status(201).send({
-        msg: "O usuário foi registrado com sucesso",
-      });
-    }
-  });
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await user.create({
+      user_name: username,
+      user_password: hashedPassword,
+      user_email: email,
+    });
+    res.status(201).send({
+      msg: "O usuário foi registrado com sucesso",
+    });
+  } catch (err) {
+    res.status(500).send({
+      msg: "Aconteceu um erro no seu registro...",
+    });
+  }
 };
 
 const logIn = async (req, res) => {
   const { username, password } = req.body;
 
-  conn.query(
-    "SELECT * FROM users WHERE LOWER(user_name) = LOWER(?)",
-    username,
-    async (err, result) => {
-      if (err) {
-        throw err;
-      } else if (result.length > 0) {
-        const match = await bcrypt.compare(password, result[0].user_password);
-        if (!match) {
-          res.status(401).send({ message: "Login inválido! Tente novamente." });
-        } else {
-          const user = result[0].user_name;
-          const accessToken = jwt.sign({ user }, process.env.SECRET, {
-            expiresIn: "10m",
-          });
-          const refreshToken = jwt.sign({ user }, process.env.REFRESH_SECRET, {
-            expiresIn: "15m",
-          });
-          // Assigning refresh token in http-only cookie
-          res.cookie("jwt", refreshToken, {
-            httpOnly: true,
-            sameSite: "None",
-            secure: true,
-            maxAge: 24 * 60 * 60 * 1000,
-          });
-          res.json({ accessToken });
-        }
-      } else {
-        res.status(401).send({ message: "Login inválido! Tente novamente." });
-        return;
-      }
-    }
-  );
+  try {
+    const userLogin = await user.findOne({
+      where: { user_name: username.toLowerCase() },
+    });
+
+    if (!userLogin)
+      return res
+        .status(401)
+        .send({ message: "Login inválido! Tente novamente." });
+
+    const match = await bcrypt.compare(password, userLogin.user_password);
+    if (!match)
+      return res
+        .status(401)
+        .send({ message: "Login inválido! Tente novamente." });
+
+    const userName = userLogin.user_name;
+    const accessToken = jwt.sign({ userName }, process.env.SECRET, {
+      expiresIn: "10m",
+    });
+    const refreshToken = jwt.sign({ userName }, process.env.REFRESH_SECRET, {
+      expiresIn: "15m",
+    });
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "None",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    
+    res.json({ accessToken });
+  } catch (err) {
+    res.status(500).send({
+      msg: "Aconteceu um erro no seu registro...",
+    });
+  }
 };
 
-module.exports = { signUp, logIn};
+module.exports = { signUp, logIn };

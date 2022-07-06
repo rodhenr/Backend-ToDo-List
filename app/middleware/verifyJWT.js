@@ -4,9 +4,8 @@ require("dotenv").config();
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
 
-  if (!authHeader?.startsWith("Bearer ")) {
+  if (!authHeader?.startsWith("Bearer "))
     return res.status(401).json({ message: "Nenhum token encontrado." });
-  }
 
   const token = authHeader.split(" ")[1];
 
@@ -16,8 +15,7 @@ const verifyToken = (req, res, next) => {
         .status(403)
         .json({ message: "Falha ao autenticar o token.", err });
     }
-
-    req.username = decoded.user;
+    req.username = decoded.userName;
     next();
   });
 };
