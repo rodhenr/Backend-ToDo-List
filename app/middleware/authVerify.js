@@ -1,4 +1,4 @@
-const { user } = require("../models");
+const { User } = require("../models");
 const { Op } = require("sequelize");
 const { validationResult } = require("express-validator");
 require("dotenv").config();
@@ -13,7 +13,7 @@ verifySignUp = async (req, res, next) => {
     });
 
   try {
-    const users = await user.findOne({
+    const users = await User.findOne({
       where: {
         [Op.or]: [
           { user_name: username.toLowerCase() },

@@ -1,4 +1,4 @@
-const { user } = require("../models");
+const { User } = require("../models");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
@@ -8,7 +8,7 @@ const signUp = async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    await user.create({
+    await User.create({
       user_name: username,
       user_password: hashedPassword,
       user_email: email,
@@ -27,7 +27,7 @@ const logIn = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const userLogin = await user.findOne({
+    const userLogin = await User.findOne({
       where: { user_name: username.toLowerCase() },
     });
 

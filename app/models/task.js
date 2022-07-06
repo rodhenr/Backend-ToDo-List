@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Task = sequelize.define(
-    "task",
+    "Task",
     {
       task_id: {
         type: DataTypes.INTEGER,
@@ -21,6 +21,13 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     }
   );
+
+  Task.associate = (models) => {
+    Task.belongsTo(models.User, {
+      targetKey: "user_name",
+      foreignKey: "user_name",
+    });
+  };
 
   return Task;
 };

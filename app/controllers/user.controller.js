@@ -1,4 +1,4 @@
-const { task } = require("../models");
+const { Task } = require("../models");
 const uuid = require("uuid");
 require("dotenv").config();
 
@@ -6,7 +6,7 @@ const getUserTodo = async (req, res) => {
   const { username } = req;
 
   try {
-    const userData = await task.findAll({
+    const userData = await Task.findAll({
       where: { user_name: username.toLowerCase() },
     });
     if (!userData) return;
@@ -27,7 +27,7 @@ const addTodo = async (req, res) => {
   const task_uuid = uuid.v4();
 
   try {
-    await task.create(
+    await Task.create(
       {
         task_uuid,
         task_desc: item,
@@ -49,7 +49,7 @@ const updateTodo = async (req, res) => {
   const { username } = req;
 
   try {
-    const toDo = await task.findOne({
+    const toDo = await Task.findOne({
       where: { task_uuid: task_uuid, user_name: username.toLowerCase() },
     });
     toDo.task_desc = task_desc;
@@ -66,7 +66,7 @@ const deleteTodo = async (req, res) => {
   const { username } = req;
 
   try {
-    await task.destroy({
+    await Task.destroy({
       where: { task_uuid: id, user_name: username.toLowerCase() },
     });
 
