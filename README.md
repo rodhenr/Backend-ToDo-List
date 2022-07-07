@@ -6,6 +6,7 @@ Este repositório é a parte backend do projeto [ToDo-List](https://github.com/r
 Para este projeto foram utilizadas as seguintes tecnologias:
 
 - [Express](https://expressjs.com/pt-br/)
+- [Sequelize](https://sequelize.org/)
 - [Bcrypt](https://www.npmjs.com/package/bcrypt)
 - [JWT](https://jwt.io/)
 - [UUID](https://www.uuidgenerator.net/)
