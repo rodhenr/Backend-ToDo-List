@@ -49,11 +49,12 @@ const updateTodo = async (req, res) => {
   const { username } = req;
 
   try {
-    const toDo = await Task.findOne({
-      where: { task_uuid: task_uuid, user_name: username.toLowerCase() },
-    });
-    toDo.task_desc = task_desc;
-    await toDo.save();
+    await Task.findOne(
+      { task_desc: task_desc },
+      {
+        where: { task_uuid: task_uuid, user_name: username.toLowerCase() },
+      }
+    );
 
     return res.status(200).send("Dados atualizados com sucesso!");
   } catch (err) {
