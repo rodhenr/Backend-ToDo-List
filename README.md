@@ -19,4 +19,4 @@ Para este projeto foram utilizadas as seguintes tecnologias:
 Caso tenha alguma dúvida ou alguma sugestão fico no aguardo da sua mensagem!
 
 ## Live Demo :computer:
-Para visualizar uma versão de demonstração do site clique [aqui](https://rodhenr.github.io/ToDo-List/).
+Para visualizar uma versão de demonstração do site clique [aqui](https://rodhenr.github.io/ToDo-List-FrontEnd/).
